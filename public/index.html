@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auth Demo – Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --border: #1e1e2e;
+      --accent: #4f8ef7;
+      --accent2: #a78bfa;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --google-blue: #4285F4;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+    }
+
+    /* ── Left panel: explicación didáctica ── */
+    .panel-left {
+      padding: 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-left::before {
+      content: '';
+      position: absolute;
+      top: -200px; left: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(79,142,247,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(79,142,247,.1);
+      border: 1px solid rgba(79,142,247,.25);
+      padding: .35rem .8rem;
+      border-radius: 999px;
+      width: fit-content;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 3vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #e8e8f0 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      margin-top: 2.5rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      border-radius: 3px 0 0 3px;
+    }
+
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(79,142,247,.15);
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-text { font-size: .875rem; line-height: 1.5; color: var(--muted); }
+    .step-text strong { color: var(--text); font-weight: 500; }
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: .8em;
+      background: rgba(79,142,247,.1);
+      color: var(--accent);
+      padding: .1em .4em;
+      border-radius: 4px;
+    }
+
+    /* ── Right panel: login card ── */
+    .panel-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem;
+      position: relative;
+    }
+
+    .panel-right::before {
+      content: '';
+      position: absolute;
+      bottom: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(167,139,250,.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 380px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-logo {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+    }
+
+    .card p {
+      color: var(--muted);
+      font-size: .875rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* ── Google button ── */
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+      width: 100%;
+      padding: .85rem 1.5rem;
+      background: #fff;
+      color: #1f1f1f;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+
+    .btn-google:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,.4);
+    }
+
+    .btn-google:active { transform: translateY(0); }
+
+    .google-icon {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── LocalStorage badge ── */
+    .ls-badge {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .875rem 1rem;
+      background: rgba(167,139,250,.08);
+      border: 1px solid rgba(167,139,250,.2);
+      border-radius: 10px;
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
+    .ls-badge .dot {
+      width: 8px; height: 8px;
+      background: var(--accent2);
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .5; transform: scale(.8); }
+    }
+
+    /* ── Error message ── */
+    .error-msg {
+      display: none;
+      align-items: center;
+      gap: .5rem;
+      padding: .75rem 1rem;
+      background: rgba(239,68,68,.1);
+      border: 1px solid rgba(239,68,68,.3);
+      border-radius: 8px;
+      font-size: .8rem;
+      color: #f87171;
+      margin-bottom: 1rem;
+    }
+
+    .error-msg.show { display: flex; }
+
+    /* ── Footer note ── */
+    .card-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: .75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Already logged in state ── */
+    .already-logged {
+      display: none;
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .already-logged.show { display: flex; }
+    .already-logged .avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      margin: 0 auto;
+      border: 3px solid var(--accent);
+    }
+
+    .btn-dashboard {
+      display: block;
+      padding: .85rem 1.5rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .95rem;
+      font-weight: 500;
+      border-radius: 12px;
+      text-decoration: none;
+      text-align: center;
+      transition: opacity .2s;
+    }
+
+    .btn-dashboard:hover { opacity: .9; }
+
+    @media (max-width: 768px) {
+      body { grid-template-columns: 1fr; }
+      .panel-left { display: none; }
+      .panel-right { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     PANEL IZQUIERDO – Explicación del flujo
+═══════════════════════════════════════ -->
+<div class="panel-left">
+  <span class="tag">🎓 Taller de Diseño Multimedia</span>
+  <h1>Auth con Google + Sesiones</h1>
+  <p style="color:var(--muted); font-size:.9rem; line-height:1.7">
+    Cómo funciona el flujo <strong style="color:var(--text)">OAuth 2.0</strong> paso a paso:
+  </p>
+
+  <div class="flow">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Usuario hace clic en "Continuar con Google"</strong><br>
+        El servidor redirige a <code>accounts.google.com</code> con tu <code>client_id</code> y los scopes que pediste.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Google autentica al usuario</strong><br>
+        Si acepta, Google redirige de vuelta a tu <code>/auth/google/callback</code> con un <code>code</code> temporal.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Tu servidor intercambia el code por tokens</strong><br>
+        Passport hace esta solicitud automáticamente y recibe el perfil del usuario.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        <strong>Sesión creada en el servidor</strong><br>
+        <code>express-session</code> guarda los datos y envía una cookie <code>connect.sid</code> al navegador.
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-text">
+        <strong>Frontend guarda en localStorage</strong><br>
+        El dashboard llama a <code>/api/me</code> y guarda el perfil en <code>localStorage</code> para acceso rápido offline.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL DERECHO – Card de login
+═══════════════════════════════════════ -->
+<div class="panel-right">
+  <div class="card">
+    <div class="card-logo">🔐</div>
+    <h2>Iniciar sesión</h2>
+    <p>Demo de autenticación con Google OAuth 2.0 y manejo de sesiones con Node.js + Passport.</p>
+
+    <!-- Estado: ya autenticado -->
+    <div class="already-logged" id="alreadyLogged">
+      <img class="avatar" referrerpolicy="no-referrer" id="cachedAvatar" src="" alt="avatar"/>
+      <p style="margin:0; font-size:.9rem">Ya tienes sesión activa como<br><strong id="cachedName"></strong></p>
+      <a href="/dashboard.html" class="btn-dashboard">→ Ir al Dashboard</a>
+      <a href="/auth/logout" style="font-size:.8rem; color:var(--muted); text-align:center; text-decoration:none">Cerrar sesión</a>
+    </div>
+
+    <!-- Estado: no autenticado -->
+    <div id="loginForm">
+      <div class="error-msg" id="errorMsg">
+        ⚠️ Error en la autenticación. Intenta de nuevo.
+      </div>
+
+      <a href="/auth/google" class="btn-google">
+        <!-- Google SVG icon -->
+        <svg class="google-icon" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Continuar con Google
+      </a>
+
+      <div class="divider">también puedes explorar</div>
+
+      <div class="ls-badge">
+        <div class="dot"></div>
+        <span>Después del login, el perfil se guardará en <strong style="color:var(--text)">localStorage</strong> para acceso rápido</span>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      Los datos solo se usan para esta demo.<br>
+      No se almacenan en ninguna base de datos.
+    </div>
+  </div>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════
+  // LÓGICA DEL FRONTEND
+  // ═══════════════════════════════════════════════
+
+  // 1. Verificar si hay error en la URL
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('error') === 'auth_failed') {
+    document.getElementById('errorMsg').classList.add('show');
+  }
+
+  // 2. Verificar sesión activa llamando a la API
+  //    Si el servidor tiene sesión → mostrar estado "ya autenticado"
+  //    También usamos localStorage como cache rápido
+  async function checkSession() {
+    // Primero: revisar localStorage (rápido, sin red)
+    const cached = localStorage.getItem('auth_user');
+
+    if (cached) {
+      const user = JSON.parse(cached);
+      showAlreadyLogged(user);
+    }
+
+    // Luego: verificar con el servidor (fuente de verdad)
+    try {
+      const res = await fetch('/api/me');
+      const data = await res.json();
+
+      if (data.authenticated) {
+        // Actualizar localStorage con datos frescos
+        localStorage.setItem('auth_user', JSON.stringify(data.user));
+        showAlreadyLogged(data.user);
+      } else {
+        // Si el servidor dice que no hay sesión, limpiar localStorage
+        localStorage.removeItem('auth_user');
+        document.getElementById('alreadyLogged').classList.remove('show');
+        document.getElementById('loginForm').style.display = 'block';
+      }
+    } catch (err) {
+      console.log('No se pudo verificar la sesión del servidor');
+    }
+  }
+
+  function showAlreadyLogged(user) {
+    document.getElementById('cachedAvatar').src = user.avatar || '';
+    document.getElementById('cachedName').textContent = user.name;
+    document.getElementById('alreadyLogged').classList.add('show');
+    document.getElementById('loginForm').style.display = 'none';
+  }
+
+  checkSession();
+</script>
+</body>
+</html>

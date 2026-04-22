@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auth Demo – Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #1e1e2e;
+      --accent: #4f8ef7;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,15,.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-user img {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+    }
+
+    .nav-user span {
+      font-size: .875rem;
+      color: var(--muted);
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .45rem .9rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: .8rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color .2s, color .2s;
+    }
+
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .welcome-banner {
+      grid-column: 1 / -1;
+      padding: 2rem 2.5rem;
+      background: linear-gradient(135deg, rgba(79,142,247,.12), rgba(167,139,250,.08));
+      border: 1px solid rgba(79,142,247,.2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .welcome-avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      flex-shrink: 0;
+    }
+
+    .welcome-text h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: .25rem;
+    }
+
+    .welcome-text p { color: var(--muted); font-size: .9rem; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .25rem .65rem;
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+    }
+
+    .badge-green { background: rgba(52,211,153,.1); color: var(--green); border: 1px solid rgba(52,211,153,.25); }
+    .badge-blue  { background: rgba(79,142,247,.1); color: var(--accent); border: 1px solid rgba(79,142,247,.25); }
+    .badge-purple{ background: rgba(167,139,250,.1); color: var(--accent2); border: 1px solid rgba(167,139,250,.25); }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    /* ── Session info table ── */
+    .info-table { width: 100%; border-collapse: collapse; }
+
+    .info-table tr { border-bottom: 1px solid var(--border); }
+    .info-table tr:last-child { border-bottom: none; }
+
+    .info-table td {
+      padding: .7rem 0;
+      font-size: .875rem;
+    }
+
+    .info-table td:first-child {
+      color: var(--muted);
+      width: 45%;
+    }
+
+    .info-table td:last-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      color: var(--accent);
+      word-break: break-all;
+    }
+
+    /* ── localStorage Explorer ── */
+    .ls-explorer {
+      grid-column: 1 / -1;
+    }
+
+    .ls-toolbar {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .ls-input-group {
+      display: flex;
+      gap: .5rem;
+      flex: 1;
+      min-width: 280px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: .6rem .9rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    input[type="text"]:focus { border-color: var(--accent); }
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    .btn {
+      padding: .6rem 1rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: opacity .2s, transform .1s;
+    }
+
+    .btn:active { transform: scale(.97); }
+
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+
+    /* ── LS entries list ── */
+    .ls-list {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .ls-list::-webkit-scrollbar { width: 6px; }
+    .ls-list::-webkit-scrollbar-track { background: transparent; }
+    .ls-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .ls-entry {
+      display: grid;
+      grid-template-columns: 1fr 2fr auto;
+      align-items: start;
+      gap: 1rem;
+      padding: .85rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: border-color .2s;
+    }
+
+    .ls-entry:hover { border-color: rgba(79,142,247,.3); }
+
+    .ls-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      color: var(--accent2);
+      word-break: break-all;
+    }
+
+    .ls-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      color: var(--muted);
+      word-break: break-all;
+      max-height: 60px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ls-value.expanded { max-height: none; }
+
+    .ls-delete {
+      background: transparent;
+      border: 1px solid rgba(239,68,68,.3);
+      color: var(--red);
+      font-size: .75rem;
+      padding: .25rem .5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+
+    .ls-delete:hover { background: rgba(239,68,68,.1); }
+
+    .ls-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: .875rem;
+      padding: 2rem;
+    }
+
+    /* ── Cookie info ── */
+    .cookie-display {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      color: var(--muted);
+      word-break: break-all;
+      line-height: 1.7;
+    }
+
+    .cookie-display .key { color: var(--accent2); }
+    .cookie-display .val { color: var(--green); }
+
+    /* ── Concepts section ── */
+    .concepts {
+      grid-column: 1 / -1;
+    }
+
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .concept-card {
+      padding: 1.25rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .concept-icon { font-size: 1.5rem; margin-bottom: .75rem; display: block; }
+
+    .concept-card h4 {
+      font-family: 'Syne', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+    }
+
+    .concept-card p {
+      font-size: .8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── Toast notification ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: .75rem 1.25rem;
+      border-radius: 10px;
+      font-size: .85rem;
+      font-weight: 500;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+      z-index: 999;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { background: rgba(52,211,153,.15); border: 1px solid rgba(52,211,153,.3); color: var(--green); }
+    .toast.error   { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--red); }
+    .toast.info    { background: rgba(79,142,247,.15); border: 1px solid rgba(79,142,247,.3); color: var(--accent); }
+
+    @media (max-width: 768px) {
+      main { grid-template-columns: 1fr; padding: 1.5rem 1rem; }
+      .welcome-banner, .ls-explorer, .concepts { grid-column: 1; }
+      .concept-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav>
+  <div class="nav-brand">🔐 Auth Demo</div>
+  <div class="nav-user">
+    <img id="navAvatar" referrerpolicy="no-referrer" src="" alt="avatar"/>
+    <span id="navName">Cargando...</span>
+    <a href="/auth/logout" class="btn-logout">↩ Salir</a>
+  </div>
+</nav>
+
+<!-- ── Main content ── -->
+<main>
+
+  <!-- Welcome banner -->
+  <div class="welcome-banner">
+    <img class="welcome-avatar" referrerpolicy="no-referrer" id="welcomeAvatar" src="" alt=""/>
+    <div class="welcome-text">
+      <div style="display:flex; gap:.5rem; margin-bottom:.5rem; flex-wrap:wrap;">
+        <span class="badge badge-green">✓ Autenticado</span>
+        <span class="badge badge-blue">Google OAuth 2.0</span>
+        <span class="badge badge-purple" id="sessionBadge">Sesión activa</span>
+      </div>
+      <h2 id="welcomeName">¡Hola!</h2>
+      <p id="welcomeEmail">email@ejemplo.com</p>
+    </div>
+  </div>
+
+  <!-- Session data card -->
+  <div class="card">
+    <div class="card-title">📋 Datos de sesión del servidor</div>
+    <table class="info-table">
+      <tr><td>Nombre</td><td id="infoName">—</td></tr>
+      <tr><td>Email</td><td id="infoEmail">—</td></tr>
+      <tr><td>Google ID</td><td id="infoId">—</td></tr>
+      <tr><td>Provider</td><td id="infoProvider">—</td></tr>
+      <tr><td>Fuente</td><td><span class="badge badge-green" style="font-size:.7rem">req.user (passport)</span></td></tr>
+    </table>
+    <p style="margin-top:1rem; font-size:.78rem; color:var(--muted)">
+      Estos datos viven en la sesión del servidor. 
+      La cookie <code style="font-family:monospace;background:rgba(79,142,247,.1);color:var(--accent);padding:.1em .3em;border-radius:3px">connect.sid</code> identifica tu sesión.
+    </p>
+  </div>
+
+  <!-- Cookie inspector card -->
+  <div class="card">
+    <div class="card-title">🍪 Cookies del navegador</div>
+    <div class="cookie-display" id="cookieDisplay">Cargando...</div>
+    <p style="margin-top:1rem; font-size:.78rem; color:var(--muted)">
+      La cookie <strong style="color:var(--text)">connect.sid</strong> es la que mantiene la sesión. Está marcada como <code style="font-family:monospace;background:rgba(79,142,247,.1);color:var(--accent);padding:.1em .3em;border-radius:3px">httpOnly</code> → no aparece en JS.
+    </p>
+  </div>
+
+  <!-- localStorage Explorer -->
+  <div class="card ls-explorer">
+    <div class="card-title">💾 localStorage Explorer</div>
+    <div class="ls-toolbar">
+      <div class="ls-input-group">
+        <input type="text" id="lsKey" placeholder="clave"/>
+        <input type="text" id="lsValue" placeholder="valor"/>
+        <button class="btn btn-primary" onclick="lsSet()">Guardar</button>
+      </div>
+      <button class="btn btn-secondary" onclick="lsRefresh()">↺ Refrescar</button>
+      <button class="btn btn-danger" onclick="lsClear()">Limpiar todo</button>
+    </div>
+    <div class="ls-list" id="lsList"></div>
+  </div>
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DASHBOARD – Lógica completa
+// ═══════════════════════════════════════════════════════
+
+// ── 1. VERIFICAR SESIÓN ──────────────────────────────
+async function init() {
+  try {
+    const res = await fetch('/api/me');
+    const data = await res.json();
+
+    if (!data.authenticated) {
+      // Sin sesión → redirigir al login
+      window.location.href = '/';
+      return;
+    }
+
+    const user = data.user;
+
+    // Actualizar localStorage con datos frescos del servidor
+    localStorage.setItem('auth_user', JSON.stringify(user));
+    localStorage.setItem('auth_last_login', new Date().toISOString());
+    localStorage.setItem('auth_provider', 'google');
+
+    // Poblar la UI
+    populateUI(user);
+    renderCookies();
+    lsRefresh();
+
+  } catch (err) {
+    showToast('Error al verificar la sesión', 'error');
+  }
+}
+
+function populateUI(user) {
+  // Navbar
+  document.getElementById('navAvatar').src = user.avatar || '';
+  document.getElementById('navName').textContent = user.name;
+
+  // Welcome banner
+  document.getElementById('welcomeAvatar').src = user.avatar || '';
+  document.getElementById('welcomeName').textContent = `¡Hola, ${user.name.split(' ')[0]}!`;
+  document.getElementById('welcomeEmail').textContent = user.email;
+
+  // Session info table
+  document.getElementById('infoName').textContent = user.name;
+  document.getElementById('infoEmail').textContent = user.email;
+  document.getElementById('infoId').textContent = user.id;
+  document.getElementById('infoProvider').textContent = user.provider;
+}
+
+// ── 2. MOSTRAR COOKIES ───────────────────────────────
+function renderCookies() {
+  const raw = document.cookie;
+  const el = document.getElementById('cookieDisplay');
+
+  if (!raw) {
+    el.innerHTML = `<span style="color:var(--muted)">⚠ No hay cookies JS-accesibles.<br>
+    La cookie de sesión <strong>connect.sid</strong> es httpOnly<br>
+    y no se puede leer desde JavaScript (por seguridad).</span>`;
+    return;
+  }
+
+  const cookies = raw.split(';').map(c => c.trim());
+  el.innerHTML = cookies.map(c => {
+    const [k, ...vParts] = c.split('=');
+    return `<span class="key">${k.trim()}</span>=<span class="val">${vParts.join('=')}</span>`;
+  }).join('<br>');
+}
+
+// ── 3. LOCALSTORAGE EXPLORER ─────────────────────────
+function lsRefresh() {
+  const list = document.getElementById('lsList');
+  const keys = Object.keys(localStorage);
+
+  if (keys.length === 0) {
+    list.innerHTML = '<div class="ls-empty">localStorage vacío</div>';
+    return;
+  }
+
+  list.innerHTML = keys.map(key => {
+    const raw = localStorage.getItem(key);
+    let display = raw;
+
+    // Intentar pretty-print JSON
+    try {
+      const parsed = JSON.parse(raw);
+      display = JSON.stringify(parsed, null, 2);
+    } catch(e) {}
+
+    return `
+      <div class="ls-entry">
+        <div class="ls-key">${escapeHtml(key)}</div>
+        <div class="ls-value" id="lsv-${escapeHtml(key)}" onclick="toggleExpand('${escapeHtml(key)}')" style="cursor:pointer" title="Clic para expandir">${escapeHtml(display)}</div>
+        <button class="ls-delete" onclick="lsDelete('${escapeHtml(key)}')">🗑 Borrar</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleExpand(key) {
+  const el = document.getElementById('lsv-' + key);
+  if (el) el.classList.toggle('expanded');
+}
+
+function lsSet() {
+  const key = document.getElementById('lsKey').value.trim();
+  const val = document.getElementById('lsValue').value.trim();
+
+  if (!key) { showToast('Ingresa una clave', 'error'); return; }
+
+  localStorage.setItem(key, val);
+  document.getElementById('lsKey').value = '';
+  document.getElementById('lsValue').value = '';
+  lsRefresh();
+  showToast(`✓ Guardado: "${key}"`, 'success');
+}
+
+function lsDelete(key) {
+  localStorage.removeItem(key);
+  lsRefresh();
+  showToast(`Eliminado: "${key}"`, 'info');
+}
+
+function lsClear() {
+  if (!confirm('¿Borrar todo el localStorage? Esto cerrará tu sesión en el frontend.')) return;
+  localStorage.clear();
+  lsRefresh();
+  showToast('localStorage limpiado', 'info');
+}
+
+// ── 4. UTILIDADES ────────────────────────────────────
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => { t.classList.remove('show'); }, 3000);
+}
+
+// ── INICIAR ──────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
