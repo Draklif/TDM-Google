@@ -43,12 +43,6 @@ google-auth-demo/
 5. Clic en **Create**
 6. Copiar el **Client ID** y **Client Secret**
 
-### Paso 4 – Pantalla de consentimiento
-1. **OAuth consent screen** → External → **Create**
-2. Llena: App name, User support email, Developer email
-3. Scopes: agregar `email` y `profile`
-4. Agrega tu email como **Test user**
-
 ---
 
 ## 📡 Endpoints
